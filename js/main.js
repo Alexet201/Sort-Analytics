@@ -1,12 +1,12 @@
 import { algorithms, getAlgorithm } from './algorithms/index.js';
-import { Visualizer }  from './core/Visualizer.js';
-import { CodePanel }   from './core/CodePanel.js';
-import { Player }      from './core/Player.js';
-import { AudioEngine } from './core/AudioEngine.js';
+import { Visualizer }      from './core/Visualizer.js';
+import { CodePanel }       from './core/CodePanel.js';
+import { Player }          from './core/Player.js';
+import { AudioEngine }     from './core/AudioEngine.js';
+import { ComplexityChart } from './core/ComplexityChart.js';
 import { generateData, CaseType } from './core/DataFactory.js';
 import { Controls, SPEEDS } from './ui/Controls.js';
 
-/* ---------- Estado ---------- */
 const state = {
   algorithmId: algorithms[0].id,
   size: 40,
@@ -14,15 +14,14 @@ const state = {
   speed: SPEEDS[1],
 };
 
-/* ---------- Wiring ---------- */
 const visualizer = new Visualizer(document.getElementById('bars'));
 const codePanel  = new CodePanel(document.getElementById('code'));
 const audio      = new AudioEngine();
 const player     = new Player(visualizer, codePanel);
+const chart      = new ComplexityChart(document.getElementById('complexity-chart'));
 
 const controls = new Controls({
   algorithms,
-
   onAlgorithmChange(algo) { state.algorithmId = algo.id; regenerate(); },
   onSizeChange(size)      { state.size = size; regenerate(); },
   onCaseChange(c)         { state.caseType = c; regenerate(); },
@@ -31,49 +30,48 @@ const controls = new Controls({
   onStep()                { player.stepAndRender(); },
   onReset()               { player.reset(); player.pause(); },
   onNewData()             { regenerate(); },
-
-  onSoundToggle() {
-    const enabled = audio.toggle();
-    controls.setSoundEnabled(enabled);
-  },
+  onSoundToggle()         { controls.setSoundEnabled(audio.toggle()); },
 });
 
-/* ---------- Reacciones del Player ---------- */
+/* ── Hooks del Player ── */
+
+let wasFinished = false;
 
 player.onStateChange = ({ playing, finished, canStep }) => {
   controls.setPlaying(playing);
   controls.setStepEnabled(canStep);
   if (finished) controls.btnPlay.textContent = '↻ Repetir';
+
+  // Sólo marcamos en la transición false → true
+  if (finished && !wasFinished) {
+    chart.markExecution(player.length, player.counters.iterations, state.caseType);
+  }
+  wasFinished = finished;
 };
 
-player.onCountersChange = (counters) => {
-  controls.updateStats(counters);
-};
+player.onCountersChange = (c) => controls.updateStats(c);
+player.onSorted         = (index, value, total) => audio.play(value / total);
 
-// Cada vez que un índice NUEVO se marca como ordenado → un tono.
-// El pitch depende del valor: barras altas suenan más agudo.
-player.onSorted = (index, value, total) => {
-  audio.play(value / total);
-};
-
-/* ---------- Audio: desbloqueo tras el primer gesto del usuario ---------- */
-const unlockAudio = () => {
+/* ── Desbloqueo de audio tras primer gesto ── */
+const unlock = () => {
   audio.unlock();
-  document.removeEventListener('click', unlockAudio);
-  document.removeEventListener('keydown', unlockAudio);
+  document.removeEventListener('click', unlock);
+  document.removeEventListener('keydown', unlock);
 };
-document.addEventListener('click', unlockAudio);
-document.addEventListener('keydown', unlockAudio);
+document.addEventListener('click', unlock);
+document.addEventListener('keydown', unlock);
 
-/* ---------- Flujo principal ---------- */
+/* ── Flujo principal ── */
 function regenerate() {
   const algo = getAlgorithm(state.algorithmId);
   const data = generateData(state.size, state.caseType, algo);
   player.setSpeed(state.speed.sps);
   player.load(algo, data);
+  chart.setAlgorithm(algo);   // redibuja curvas y limpia el marcador
+  wasFinished = false;
 }
 
-/* ---------- Atajos ---------- */
+/* ── Atajos ── */
 document.addEventListener('keydown', (e) => {
   if (e.target.matches('input, select, textarea')) return;
   if (e.code === 'Space')      { e.preventDefault(); player.toggle(); }

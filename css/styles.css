@@ -316,3 +316,124 @@ body {
 }
 
 .btn.sound-off { opacity: .55; }
+
+/* ═══════ Layout del stage con gráfica de complejidad ═══════ */
+.stage {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  grid-template-rows: 1fr 250px;
+  gap: 14px;
+  padding: 18px;
+  min-height: 0;
+}
+.bars-wrap { grid-column: 1 / -1; grid-row: 1; min-height: 0; }
+.code-panel { grid-column: 1; grid-row: 2; height: auto; min-height: 0; }
+
+/* ═══════ Panel de la gráfica ═══════ */
+.complexity-chart {
+  grid-column: 2;
+  grid-row: 2;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chart-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.chart-legend { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.chart-legend-item {
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+}
+.chart-legend-item.style-best    { color: var(--bar-sorted); }
+.chart-legend-item.style-average { color: var(--bar-compare); }
+.chart-legend-item.style-worst   { color: var(--bar-swap); }
+.chart-legend-item.style-marker  { color: var(--accent); }
+
+.chart-svg {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: block;
+}
+
+.chart-plot-bg { fill: rgba(255,255,255,.015); }
+.chart-grid    { stroke: rgba(255,255,255,.05); stroke-width: 1; }
+.chart-axis    { stroke: var(--border);         stroke-width: 1; }
+
+.chart-dashed {
+  stroke: var(--accent);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: .55;
+}
+
+.chart-curve {
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.chart-curve.style-best    { stroke: var(--bar-sorted);  stroke-dasharray: 3 3; }
+.chart-curve.style-average { stroke: var(--bar-compare); stroke-dasharray: 6 3; }
+.chart-curve.style-worst   { stroke: var(--bar-swap); }
+
+.chart-marker {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.chart-marker-label {
+  fill: var(--accent);
+  font-size: 10px;
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+.chart-tick        { fill: var(--muted); font-size: 9px; font-family: var(--mono); }
+.chart-axis-label  { fill: var(--muted); font-size: 9px; font-family: var(--mono); opacity: .8; }
+
+.chart-hint {
+  font-size: 10.5px;
+  color: var(--muted);
+  text-align: center;
+  font-style: italic;
+  opacity: .65;
+}
+
+@media (max-width: 1100px) {
+  .stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 220px 240px;
+  }
+  .bars-wrap        { grid-column: 1; grid-row: 1; }
+  .code-panel       { grid-column: 1; grid-row: 2; }
+  .complexity-chart { grid-column: 1; grid-row: 3; }
+}
