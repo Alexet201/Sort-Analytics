@@ -4,6 +4,8 @@ export const bubbleSort = {
   description: 'Compara elementos adyacentes y los intercambia si están desordenados. Repite hasta que no haya cambios.',
   complexity: { best: 'O(n)', average: 'O(n²)', worst: 'O(n²)', space: 'O(1)' },
 
+
+  
   code: [
     'for (let i = 0; i < n - 1; i++) {',
     '  let swapped = false;',
